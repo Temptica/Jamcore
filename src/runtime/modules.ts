@@ -3,6 +3,7 @@ import {
 } from "../features/federation/index.js";
 import { startScheduledPostPublisherRuntime } from "../features/posts/publisher.runtime.js";
 import { startRadioRuntime } from "../features/radio/index.js";
+import { startStreamerAlertsRuntime } from "../features/streamer-alerts/index.js";
 import { startStreamersRuntime } from "../features/streamers/index.js";
 import { startPlatformRuntime } from "../jobs/platform.js";
 import { startWebBuildCleanupRuntime } from "../features/games/web-build.runtime.js";
@@ -24,6 +25,7 @@ export async function startRuntimeModules(): Promise<RuntimeModules> {
     Promise.resolve(startWebBuildCleanupRuntime()),
     startRadioRuntime(),
     startStreamersRuntime(),
+    startStreamerAlertsRuntime(),
   ]);
 
   return {

@@ -118,6 +118,8 @@ export const requestUserBaseSelect = {
   bannerPicture: true,
   email: true,
   twitch: true,
+  twitchUserId: true,
+  twitchLinkedAt: true,
   primaryRoles: true,
   secondaryRoles: true,
   teams: {

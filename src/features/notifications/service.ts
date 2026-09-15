@@ -21,6 +21,10 @@ export const notificationIdParamsSchema = z.object({
 export const notificationPreferencesSchema = z.object({
   mutedTypes: z.array(z.string().trim().min(1)).optional().default([]),
   emailEnabled: z.boolean().optional().default(false),
+  streamerAlertEmailOptOut: z.boolean().optional().default(false),
+  streamerAlertSoundOptOut: z.boolean().optional().default(false),
+  streamerAlertSoundUrl: z.string().trim().min(1).nullable().optional(),
+  streamerAlertSoundDurationMs: z.number().int().positive().max(5000).nullable().optional(),
 });
 
 type NotificationActor = {
@@ -169,6 +173,10 @@ export async function getNotificationPreferences(actor: NotificationActor) {
     userId: actor.id,
     mutedTypes: [],
     emailEnabled: false,
+    streamerAlertEmailOptOut: false,
+    streamerAlertSoundOptOut: false,
+    streamerAlertSoundUrl: null,
+    streamerAlertSoundDurationMs: null,
     updatedAt: null,
   };
 }
@@ -186,10 +194,18 @@ export async function updateNotificationPreferences({
       userId: actor.id,
       mutedTypes: input.mutedTypes,
       emailEnabled: input.emailEnabled,
+      streamerAlertEmailOptOut: input.streamerAlertEmailOptOut,
+      streamerAlertSoundOptOut: input.streamerAlertSoundOptOut,
+      streamerAlertSoundUrl: input.streamerAlertSoundUrl ?? null,
+      streamerAlertSoundDurationMs: input.streamerAlertSoundDurationMs ?? null,
     },
     update: {
       mutedTypes: input.mutedTypes,
       emailEnabled: input.emailEnabled,
+      streamerAlertEmailOptOut: input.streamerAlertEmailOptOut,
+      streamerAlertSoundOptOut: input.streamerAlertSoundOptOut,
+      streamerAlertSoundUrl: input.streamerAlertSoundUrl ?? null,
+      streamerAlertSoundDurationMs: input.streamerAlertSoundDurationMs ?? null,
       updatedAt: new Date(),
     },
   });

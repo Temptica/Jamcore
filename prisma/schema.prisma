@@ -32,6 +32,8 @@ model User {
   mod               Boolean  @default(false)
   admin             Boolean  @default(false)
   twitch            String?
+  twitchUserId      String?   @unique @map("twitch_user_id")
+  twitchLinkedAt    DateTime? @map("twitch_linked_at")
   tenantId          String?  @map("tenant_id")
 
   // Relations
@@ -63,6 +65,7 @@ model User {
   commentReactions              CommentReaction[]
   gamePageAchievements          GamePageAchievement[]   @relation(name: "GamePageAchievementToUsers")
   achievementUnlocks            AchievementUnlock[]     @relation(name: "AchievementUnlockToUser")
+  streamerGameAlerts            StreamerGameAlert[]     @relation(name: "StreamerGameAlertToUser")
   receivedNotifications         Notification[]          @relation(name: "NotificationToRecipient")
   sentNotifications             Notification[]          @relation(name: "NotificationToActor")
   PostReaction                  PostReaction[]
@@ -413,6 +416,7 @@ model Game {
   tags               Tag[]              @relation(name: "GamesToTags")
   comments           Comment[]          @relation(name: "CommentToGame")
   notifications      Notification[]     @relation(name: "NotificationToGame")
+  streamerAlerts     StreamerGameAlert[] @relation(name: "StreamerGameAlertToGame")
   gameEmotes         Reaction[]         @relation(name: "ReactionToGameOwner")
   recommendedByUsers User[]             @relation(name: "UserRecommendedGames")
   pages              GamePage[]         @relation(name: "GameToPages")
@@ -935,6 +939,7 @@ enum NotificationType {
   FOLLOW_BACK
   TEAM_INVITE
   TEAM_APPLICATION
+  STREAMER_LIVE
 }
 
 model Notification {
@@ -1527,6 +1532,43 @@ model NotificationPreference {
   mutedTypes   Json     @map("muted_types")
   emailEnabled Boolean  @default(false) @map("email_enabled")
   updatedAt    DateTime @default(now()) @map("updated_at")
+
+  // Streamer-live alert preferences. Opt-out by default, since the whole
+  // point of the feature is for devs to hear about it without setup.
+  streamerAlertEmailOptOut     Boolean @default(false) @map("streamer_alert_email_opt_out")
+  streamerAlertSoundOptOut     Boolean @default(false) @map("streamer_alert_sound_opt_out")
+  streamerAlertSoundUrl        String? @map("streamer_alert_sound_url")
+  streamerAlertSoundDurationMs Int?    @map("streamer_alert_sound_duration_ms")
+}
+
+model StreamerGameAlert {
+  id Int @id @default(autoincrement())
+
+  game   Game @relation(fields: [gameId], references: [id], name: "StreamerGameAlertToGame")
+  gameId Int  @map("game_id")
+
+  streamer   User @relation(fields: [streamerId], references: [id], name: "StreamerGameAlertToUser")
+  streamerId Int  @map("streamer_id")
+
+  twitchUserId   String   @map("twitch_user_id")
+  twitchLogin    String   @map("twitch_login")
+  twitchStreamId String   @map("twitch_stream_id")
+  startedAt      DateTime @map("started_at")
+
+  notifiedAt DateTime? @map("notified_at")
+
+  // Populated once the stream ends and its VOD is found on Twitch.
+  vodId               String?   @map("vod_id")
+  vodUrl              String?   @map("vod_url")
+  vodTimestampSeconds Int?      @map("vod_timestamp_seconds")
+  vodCheckedAt        DateTime? @map("vod_checked_at")
+  vodCheckAttempts    Int       @default(0) @map("vod_check_attempts")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([streamerId, gameId])
+  @@index([gameId])
+  @@index([vodId])
 }
 
 model PostAutosave {
